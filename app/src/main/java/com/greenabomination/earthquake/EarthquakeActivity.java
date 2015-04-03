@@ -1,9 +1,11 @@
 package com.greenabomination.earthquake;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -14,12 +16,16 @@ public class EarthquakeActivity extends ActionBarActivity {
     private static final int MENU_PREFERENCE = Menu.FIRST + 1;
     private static final int MENU_REFRESH = Menu.FIRST + 2;
     private static final int SHOW_PREFERENCE = 1;
+    public int minimumMagnitude = 0;
+    public boolean autoUpdateFlag = false;
+    public int updateFreq = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_earthquake);
-        Log.d(TAG, "CREATED");
+        //Log.d(TAG, "CREATED");
+        updateFromPreferences();
     }
 
     @Override
@@ -36,7 +42,7 @@ public class EarthquakeActivity extends ActionBarActivity {
         super.onOptionsItemSelected(item);
         switch (item.getItemId()) {
             case MENU_PREFERENCE: {
-                Intent i = new Intent(this, PreferencesActivity.class);
+                Intent i = new Intent(this, FragmentPreferences.class);
                 startActivityForResult(i, SHOW_PREFERENCE);
                 return true;
             }
@@ -46,5 +52,36 @@ public class EarthquakeActivity extends ActionBarActivity {
 
         }
         return false;
+    }
+
+    private void updateFromPreferences() {
+        Context context = getApplicationContext();
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+
+        minimumMagnitude = Integer.parseInt(sp.getString(FragmentPreferences.PREF_MIN_MAG, "3"));
+        updateFreq = Integer.parseInt(sp.getString(FragmentPreferences.PREF_UPDATE_FREQ, "0"));
+        autoUpdateFlag = sp.getBoolean(FragmentPreferences.PREF_AUTO_UPDATE, false);
+
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == SHOW_PREFERENCE)
+
+            updateFromPreferences();
+        android.app.FragmentManager fm = getFragmentManager();
+        final EarthquakeListFragment earthquakeListFragment
+                = (EarthquakeListFragment) fm.findFragmentById(R.id.EarthquakeListFragment);
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                earthquakeListFragment.refreshquakes();
+            }
+        });
+        t.start();
+
     }
 }

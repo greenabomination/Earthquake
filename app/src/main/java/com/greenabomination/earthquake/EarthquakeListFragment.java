@@ -42,7 +42,7 @@ public class EarthquakeListFragment extends ListFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Log.d(TAG, "onActivityCreated");
+        //      Log.d(TAG, "onActivityCreated");
         int layoutID = android.R.layout.simple_list_item_1;
         aa = new ArrayAdapter<Quake>(getActivity(), layoutID, earthquakes);
         setListAdapter(aa);
@@ -50,7 +50,7 @@ public class EarthquakeListFragment extends ListFragment {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                Log.d(TAG, "thread running");
+                //      Log.d(TAG, "thread running");
                 refreshquakes();
             }
         });
@@ -76,7 +76,7 @@ public class EarthquakeListFragment extends ListFragment {
                 Document dom = documentBuilder.parse(inputStream);
                 Element docelem = dom.getDocumentElement();
                 earthquakes.clear();
-                Log.d(TAG, "step1");
+                //  Log.d(TAG, "step1");
                 NodeList nl = docelem.getElementsByTagName("entry");
                 if (nl != null && nl.getLength() > 0) {
                     for (int i = 0; i < nl.getLength(); i++) {
@@ -87,7 +87,6 @@ public class EarthquakeListFragment extends ListFragment {
                         Element link = (Element) entry.getElementsByTagName("link").item(0);
 
                         String details = title.getFirstChild().getNodeValue();
-                        Log.d(TAG, details);
                         String hostname = "http://earthquake.usgs.gov";
                         String linkString = hostname + link.getAttribute("href");
                         String point = g.getFirstChild().getNodeValue();
@@ -139,7 +138,11 @@ public class EarthquakeListFragment extends ListFragment {
     }
 
     private void addNewQuake(Quake _q) {
-        earthquakes.add(_q);
-        aa.notifyDataSetChanged();
+        EarthquakeActivity earthquakeActivity = (EarthquakeActivity) getActivity();
+        if (_q.getMagnitude() > earthquakeActivity.minimumMagnitude) {
+            Log.d(TAG, _q.toString());
+            earthquakes.add(_q);
+            aa.notifyDataSetChanged();
+        }
     }
 }
