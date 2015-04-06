@@ -3,6 +3,7 @@
     package="com.greenabomination.earthquake">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -21,6 +22,9 @@
             android:name=".FragmentPreferences"
             android:label="@string/menu_preferences"></activity>
 
+        <provider
+            android:authorities="com.greenabomination.earthquake"
+            android:name=".EarthquakeProvider" />
     </application>
 
 </manifest>
