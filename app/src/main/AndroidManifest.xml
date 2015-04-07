@@ -21,10 +21,26 @@
         <activity
             android:name=".FragmentPreferences"
             android:label="@string/menu_preferences"></activity>
+        <activity
+            android:name=".EarthquakeSearchResults"
+            android:label="Earthquake Search"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
+
 
         <provider
             android:authorities="com.greenabomination.earthquake"
             android:name=".EarthquakeProvider" />
+        <meta-data
+            android:name="android.app.default_searchable"
+            android:value=".EarthquakeSearchResults"/>
     </application>
 
 </manifest>

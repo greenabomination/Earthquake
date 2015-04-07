@@ -7,4 +7,5 @@
     <string name="auto_update_prompt">Auto update?</string>
     <string name="update_freq_pref">Update Frequency</string>
     <string name="min_quake_mag_prompt">Minimum Quake Magnitude</string>
+    <string name="search_description">Search earthquake location</string>
 </resources>

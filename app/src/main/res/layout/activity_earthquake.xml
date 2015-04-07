@@ -3,6 +3,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <SearchView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/searchView"
+        android:iconifiedByDefault="false"
+        android:background="#FFF" />
+
     <fragment
         android:name="com.greenabomination.earthquake.EarthquakeListFragment"
         android:id="@+id/EarthquakeListFragment"

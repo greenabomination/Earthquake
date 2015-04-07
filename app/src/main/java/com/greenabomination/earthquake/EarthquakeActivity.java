@@ -1,5 +1,7 @@
 package com.greenabomination.earthquake;
 
+import android.app.SearchManager;
+import android.app.SearchableInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 
@@ -26,6 +29,11 @@ public class EarthquakeActivity extends ActionBarActivity {
         setContentView(R.layout.activity_earthquake);
         //Log.d(TAG, "CREATED");
         updateFromPreferences();
+
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchableInfo searchableInfo = searchManager.getSearchableInfo(getComponentName());
+        SearchView searchView = (SearchView) findViewById(R.id.searchView);
+        searchView.setSearchableInfo(searchableInfo);
     }
 
     @Override
