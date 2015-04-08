@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.SearchView;
@@ -27,7 +28,6 @@ public class EarthquakeActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_earthquake);
-        //Log.d(TAG, "CREATED");
         updateFromPreferences();
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
@@ -83,13 +83,9 @@ public class EarthquakeActivity extends ActionBarActivity {
         android.app.FragmentManager fm = getFragmentManager();
         final EarthquakeListFragment earthquakeListFragment
                 = (EarthquakeListFragment) fm.findFragmentById(R.id.EarthquakeListFragment);
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
+
                 earthquakeListFragment.refreshquakes();
-            }
-        });
-        t.start();
+
 
     }
 }

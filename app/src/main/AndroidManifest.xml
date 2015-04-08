@@ -40,7 +40,10 @@
             android:name=".EarthquakeProvider" />
         <meta-data
             android:name="android.app.default_searchable"
-            android:value=".EarthquakeSearchResults"/>
+            android:value=".EarthquakeSearchResults" />
+        <service
+            android:name=".EarthquakeUpdateService"
+            android:enabled="true" />
     </application>
 
 </manifest>
