@@ -1,6 +1,8 @@
 package com.greenabomination.earthquake;
 
-import android.app.Service;
+import android.app.AlarmManager;
+import android.app.IntentService;
+import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -9,6 +11,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.location.Location;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -27,8 +30,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,11 +38,19 @@ import javax.xml.parsers.ParserConfigurationException;
 /**
  * Created by green on 08.04.15.
  */
-public class EarthquakeUpdateService extends Service {
+public class EarthquakeUpdateService extends IntentService {
 
     public static String TAG = "EARTHQUAKE_UPDATE_SERVICE";
+    private AlarmManager am;
+    private PendingIntent pi;
 
-    private Timer updateTimer;
+    public EarthquakeUpdateService() {
+        super("EarthquakeUpdateService");
+    }
+
+    public EarthquakeUpdateService(String name) {
+        super(name);
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -49,44 +58,33 @@ public class EarthquakeUpdateService extends Service {
     }
 
     @Override
-    public void onCreate() {
-        super.onCreate();
-        updateTimer = new Timer("earthquakesUpdates");
+    protected void onHandleIntent(Intent intent) {
+        Context context = getApplicationContext();
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        int updateFreq = Integer.parseInt(sp.getString(FragmentPreferences.PREF_UPDATE_FREQ, "60"));
+        boolean autoUpdateChecked = sp.getBoolean(FragmentPreferences.PREF_AUTO_UPDATE, false);
+        if (autoUpdateChecked) {
+            int alarmType = AlarmManager.ELAPSED_REALTIME_WAKEUP;
+            long timeToRefresh = SystemClock.elapsedRealtime() + updateFreq * 60 * 1000;
+            am.setInexactRepeating(alarmType, timeToRefresh, updateFreq * 60 * 1000, pi);
+        } else {
+            am.cancel(pi);
+
+            refreshEarthquakes();
+
+        }
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Context context = getApplicationContext();
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+    public void onCreate() {
+        super.onCreate();
+        am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        String ALARM_ACTION = EarthquakeAlarmReceiver.ACTION_REFRESH_EARTHQUAKE_ALARM;
 
-        int updateFreq = Integer.parseInt(sp.getString(FragmentPreferences.PREF_UPDATE_FREQ, "60"));
-        boolean autoUpdateChecked = sp.getBoolean(FragmentPreferences.PREF_AUTO_UPDATE, false);
-        updateTimer.cancel();
-        updateTimer.purge();
-
-        if (autoUpdateChecked) {
-            updateTimer = new Timer("earthquakesUpdates");
-            updateTimer.scheduleAtFixedRate(doRefresh, 0, updateFreq * 60 * 1000);
-        } else {
-            Thread t = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    refreshEarthquakes();
-                }
-            });
-            t.start();
-        }
-        return Service.START_STICKY;
+        Intent intentToFire = new Intent(ALARM_ACTION);
+        pi = PendingIntent.getBroadcast(this, 0, intentToFire, 0);
     }
 
-    private TimerTask doRefresh = new TimerTask() {
-        @Override
-        public void run() {
-            Log.d(TAG, "start task");
-            refreshEarthquakes();
-            Log.d(TAG, "end task");
-        }
-    };
 
     private void addNewQuake(Quake _q) {
         ContentResolver cr = getContentResolver();
