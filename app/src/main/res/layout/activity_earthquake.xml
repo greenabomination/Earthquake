@@ -10,9 +10,13 @@
         android:iconifiedByDefault="false"
         android:background="#FFF" />
 
-    <fragment
-        android:name="com.greenabomination.earthquake.EarthquakeListFragment"
-        android:id="@+id/EarthquakeListFragment"
+    <!--<fragment-->
+    <!--android:name="com.greenabomination.earthquake.EarthquakeListFragment"-->
+    <!--android:id="@+id/EarthquakeListFragment"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent" />-->
+    <FrameLayout
+        android:id="@+id/EarthquakeFragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 </LinearLayout>

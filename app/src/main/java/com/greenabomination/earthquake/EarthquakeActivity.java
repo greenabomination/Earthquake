@@ -1,5 +1,7 @@
 package com.greenabomination.earthquake;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
 import android.content.Context;
@@ -7,8 +9,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.SearchView;
@@ -24,6 +27,9 @@ public class EarthquakeActivity extends ActionBarActivity {
     public boolean autoUpdateFlag = false;
     public int updateFreq = 0;
 
+    TabListener<EarthquakeListFragment> listTabListener;
+    TabListener<EarthquakeMapFragment> mapTabListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +40,24 @@ public class EarthquakeActivity extends ActionBarActivity {
         SearchableInfo searchableInfo = searchManager.getSearchableInfo(getComponentName());
         SearchView searchView = (SearchView) findViewById(R.id.searchView);
         searchView.setSearchableInfo(searchableInfo);
+
+        ActionBar ab = getSupportActionBar();
+        ab.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        ab.setDisplayShowTitleEnabled(false);
+
+        ActionBar.Tab listTab = ab.newTab();
+        listTabListener = new TabListener<EarthquakeListFragment>(this, R.id.EarthquakeFragmentContainer,
+                EarthquakeListFragment.class);
+        listTab.setText("List").setContentDescription("List of earthquakes").setTabListener(listTabListener);
+        ab.addTab(listTab);
+
+        ActionBar.Tab mapTab = ab.newTab();
+        mapTabListener = new TabListener<EarthquakeMapFragment>(this, R.id.EarthquakeFragmentContainer,
+                EarthquakeMapFragment.class);
+        mapTab.setText("Map").setContentDescription("Map of earthquakes").setTabListener(mapTabListener);
+        ab.addTab(mapTab);
+
+
     }
 
     @Override
@@ -80,12 +104,51 @@ public class EarthquakeActivity extends ActionBarActivity {
         if (requestCode == SHOW_PREFERENCE)
 
             updateFromPreferences();
-        android.app.FragmentManager fm = getFragmentManager();
-        final EarthquakeListFragment earthquakeListFragment
-                = (EarthquakeListFragment) fm.findFragmentById(R.id.EarthquakeListFragment);
-
-                earthquakeListFragment.refreshquakes();
+        startService(new Intent(this, EarthquakeUpdateService.class));
 
 
     }
+
+    public static class TabListener<T extends android.support.v4.app.Fragment> implements ActionBar.TabListener {
+        private android.support.v4.app.Fragment fragment;
+        private Activity activity;
+        private Class<T> fragmentClass;
+        private int fragmentContainer;
+
+        public TabListener(Activity activity, int fragmentContainer, Class<T> fragmentClass) {
+            this.activity = activity;
+            this.fragmentContainer = fragmentContainer;
+            this.fragmentClass = fragmentClass;
+        }
+
+        @Override
+        public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+
+
+            if (fragment == null) {
+                String fragmentName = fragmentClass.getName();
+                fragment = android.support.v4.app.Fragment.instantiate(activity, fragmentClass.getName());
+                fragmentTransaction.add(fragmentContainer, fragment, fragmentName);
+            } else {
+
+                fragmentTransaction.attach(fragment);
+            }
+
+        }
+
+        @Override
+        public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+            if (fragment != null) {
+                fragmentTransaction.detach(fragment);
+            }
+        }
+
+        @Override
+        public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+            if (fragment != null) {
+                fragmentTransaction.attach(fragment);
+            }
+        }
+    }
+
 }
